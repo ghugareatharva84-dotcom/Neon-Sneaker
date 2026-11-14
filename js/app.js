@@ -86,11 +86,22 @@ const FALLBACK_PRODUCTS = [
 
 let PRODUCTS = [...FALLBACK_PRODUCTS];
 let currentSneakerId = 'nike-air-cyber';
-let savedSneakers = JSON.parse(localStorage.getItem('neonSaved') || '[]');
+
+// Safe localStorage access helper
+function safeGetStorage(key, fallback) {
+  try {
+    const v = localStorage.getItem(key);
+    return v ? JSON.parse(v) : fallback;
+  } catch (e) {
+    return fallback;
+  }
+}
+
+let savedSneakers = safeGetStorage('neonSaved', []);
 const cart = [];
 
 // USER ACCOUNT AUTH SYSTEM STATE
-let currentUser = JSON.parse(localStorage.getItem('neonUser') || 'null');
+let currentUser = safeGetStorage('neonUser', null);
 let authMode = 'signup'; // 'signup' | 'login'
 
 // PAYMENT METHOD STATE
@@ -272,6 +283,14 @@ gltfLoader.load(
     if (isDetailMode && currentSneakerId) {
       load3DSneaker(currentSneakerId);
     }
+  },
+  undefined,
+  (err) => {
+    console.warn('⚠️ Could not load jordan.glb, activating fallback 3D model:', err);
+    if (!assemblySneakerGroup) {
+      assemblySneakerGroup = buildFallbackConceptPrototype();
+      scene.add(assemblySneakerGroup);
+    }
   }
 );
 
@@ -285,6 +304,10 @@ gltfLoader.load(
     if (isDetailMode && (currentSneakerId === 'puma-nitro-neon' || currentSneakerId === 'puma-phantom-stealth')) {
       load3DSneaker(currentSneakerId);
     }
+  },
+  undefined,
+  (err) => {
+    console.warn('⚠️ Could not load adidas_racer.glb:', err);
   }
 );
 
@@ -1231,24 +1254,35 @@ window.addEventListener('resize', () => {
 //  BOOT INITIALIZATION
 // ============================================================
 (async function boot() {
-  updateSavedCount();
-  updateCartBadge();
-  updateProfileBtnLabel();
-  renderProductGrid();
+  try {
+    updateSavedCount();
+    updateCartBadge();
+    updateProfileBtnLabel();
+    renderProductGrid();
 
-  // Create main landing page 360° rotating sneaker (Yellowish Golden Edition)
-  if (jordanGLTFModel) {
-    assemblySneakerGroup = buildHeroAssemblyFromGLTF();
-    scene.add(assemblySneakerGroup);
+    // Create main landing page 360° rotating sneaker (Yellowish Golden Edition)
+    if (!assemblySneakerGroup) {
+      assemblySneakerGroup = jordanGLTFModel
+        ? buildHeroAssemblyFromGLTF()
+        : buildFallbackConceptPrototype();
+      scene.add(assemblySneakerGroup);
+    }
+
+    // Apply main page permanent theme
+    resetMainTheme();
+
+    animate();
+  } catch (err) {
+    console.error('Error during boot initialization:', err);
+  } finally {
+    setTimeout(() => {
+      const sp = $('spinner');
+      if (sp) {
+        sp.classList.add('fade');
+        setTimeout(() => { if (sp && sp.parentNode) sp.remove(); }, 600);
+      }
+    }, 350);
   }
-
-  // Apply main page permanent theme
-  resetMainTheme();
-
-  animate();
-
-  setTimeout(() => $('spinner').classList.add('fade'), 350);
-  setTimeout(() => $('spinner').remove(), 1200);
 
   document.querySelectorAll('a[href^="#"]').forEach((a) => {
     a.addEventListener('click', (e) => {
