@@ -15,34 +15,6 @@ An interactive 3D e-commerce showcase built with **Three.js**, **GLTF/GLB models
 
 ---
 
-## 🚀 How to Run Locally
-
-You have multiple easy options:
-
-### Option 1: Using Node.js (Zero Dependencies)
-You don't even need `npm install`! Just run:
-
-```bash
-node server.js
-```
-Then open [http://localhost:3000](http://localhost:3000) in your browser.
-
-*(Or run `npm start`)*
-
----
-
-### Option 2: Using VS Code Live Server
-1. Open this folder in **VS Code**.
-2. Right-click `index.html` and click **"Open with Live Server"**.
-
----
-
-### Option 3: Using Python
-If you have Python installed:
-```bash
-python -m http.server 3000
-```
-Then open [http://localhost:3000](http://localhost:3000).
 
 ---
 
@@ -61,39 +33,6 @@ neon-sneaker-store/
     ├── adidas_racer.glb    # Adidas Racer TR21 3D model
     └── jordan.glb          # Air Jordan 1 High 3D model
 ```
-
----
-
-## 🌐 How to Upload to GitHub and Host Free on GitHub Pages
-
-### Step 1: Push to GitHub using Git CLI
-
-1. Open your terminal inside this folder:
-```bash
-git init
-git add .
-git commit -m "Initial commit: Neon Sneaker Store 3D"
-```
-
-2. Create a new repository on [GitHub](https://github.com/new).
-
-3. Link and push your repository:
-```bash
-git branch -M main
-git remote add origin https://github.com/<your-username>/<your-repo-name>.git
-git push -u origin main
-```
-
----
-
-### Step 2: Enable GitHub Pages (Free Live Website Hosting)
-
-1. Go to your repository on GitHub.
-2. Click **Settings** (top tabs) ➔ **Pages** (left sidebar).
-3. Under **Branch**, select `main` and keep the folder as `/ (root)`.
-4. Click **Save**.
-5. Wait 1-2 minutes, and your site will be live at:
-   `https://<your-username>.github.io/<your-repo-name>/`
 
 ---
 
