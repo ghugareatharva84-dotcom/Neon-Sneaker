@@ -1,0 +1,1681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NEON SNEAKER STORE — Next-Gen 3D Footwear Experience</title>
+  
+  <!-- SEO Best Practices -->
+  <meta name="description" content="Official Neon Sneaker Store featuring authentic Air Jordan, Puma, and Adidas 3D models, global store outlets, and sneaker crafting info." />
+  <meta name="keywords" content="Sneaker Store, 3D Sneakers, Air Jordan Store, Puma Nitro, Sneaker Outlets, Atharva Ghugare" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Import Map for Three.js ES Modules -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      /* YELLOWISH GOLDEN SIGNATURE THEME TOKENS */
+      --neon-primary: #f59e0b;
+      --neon-secondary: #d97706;
+      --neon-glow: rgba(245, 158, 11, 0.6);
+      --bg-dark: #080401;
+      --bg-card: rgba(23, 15, 4, 0.85);
+      --text-main: #f8fafc;
+      --text-muted: #cbd5e1;
+      --text-gold: #fef08a;
+      --font-main: 'Plus Jakarta Sans', sans-serif;
+      --font-display: 'Outfit', sans-serif;
+    }
+
+    /* GLOBAL RESET & HIGH-CONTRAST SELECTION */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-main);
+      overflow-x: hidden;
+      min-height: 100vh;
+      cursor: default;
+    }
+
+    /* INTERACTIVE GLOWING CUSTOM CURSOR */
+    .custom-cursor {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 32px;
+      height: 32px;
+      border: 2px solid var(--neon-primary);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 99999;
+      transform: translate(-50%, -50%);
+      transition: width 0.2s ease, height 0.2s ease, transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+      box-shadow: 0 0 16px var(--neon-glow);
+    }
+    .custom-cursor-dot {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 8px;
+      height: 8px;
+      background: var(--neon-primary);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 100000;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s ease, background-color 0.2s ease;
+      box-shadow: 0 0 10px var(--neon-primary);
+    }
+
+    /* PREMIUM CURSOR CLICK RIPPLE BURST ANIMATION */
+    .cursor-ripple {
+      position: fixed;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--neon-primary);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 99998;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 20px var(--neon-glow);
+      animation: cursorRippleAnim 0.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+    }
+
+    @keyframes cursorRippleAnim {
+      0% {
+        width: 16px;
+        height: 16px;
+        opacity: 1;
+        border-width: 3px;
+      }
+      100% {
+        width: 72px;
+        height: 72px;
+        opacity: 0;
+        border-width: 1px;
+      }
+    }
+
+    /* THREE.JS CANVAS CONTAINER */
+    #canvas-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* DYNAMIC RADIAL ILLUMINATION BACKGROUND */
+    .bg-glow-layer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      background: radial-gradient(circle at 50% 30%, #362402 0%, #170e02 70%, #080401 100%);
+      transition: background 0.8s ease-in-out;
+      pointer-events: none;
+    }
+
+    /* POP-UP FLASH TRANSITION OVERLAY */
+    #popupFlash {
+      position: fixed;
+      inset: 0;
+      background: var(--neon-primary);
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease-out;
+    }
+    #popupFlash.active {
+      opacity: 0.25;
+    }
+
+    /* NAVBAR */
+    .top-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 76px;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      background: rgba(12, 7, 2, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(245, 158, 11, 0.35);
+    }
+
+    .brand-logo {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: #ffffff;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-logo span {
+      color: var(--neon-primary);
+      text-shadow: 0 0 12px var(--neon-glow);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+
+    .nav-links a {
+      color: var(--text-main);
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      transition: all 0.2s ease;
+    }
+    .nav-links a:hover {
+      color: var(--neon-primary);
+      text-shadow: 0 0 10px var(--neon-glow);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-icon-btn {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      color: #ffffff;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.88rem;
+      transition: all 0.25s ease;
+    }
+    .nav-icon-btn:hover {
+      background: var(--neon-primary);
+      color: #000;
+      box-shadow: 0 0 16px var(--neon-glow);
+    }
+
+    .badge {
+      background: #ffffff;
+      color: #000;
+      font-size: 0.75rem;
+      font-weight: 900;
+      border-radius: 10px;
+      padding: 2px 7px;
+    }
+
+    /* BACK TO MAIN COLLECTION BUTTON */
+    .top-back-btn {
+      display: none;
+      background: var(--neon-primary);
+      color: #000;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 24px;
+      font-weight: 900;
+      font-size: 0.95rem;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      box-shadow: 0 0 20px var(--neon-glow);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .top-back-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px var(--neon-glow);
+    }
+
+    body.detail-active .top-back-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    body.detail-active .main-nav-links {
+      display: none;
+    }
+    body.detail-active #main-content {
+      display: none;
+    }
+    body.detail-active #product-detail-view {
+      display: block;
+    }
+
+    /* MAIN CONTENT SECTIONS */
+    #main-content {
+      position: relative;
+      z-index: 10;
+    }
+
+    /* HERO SECTION */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 60px 100px;
+      pointer-events: none;
+    }
+
+    .hero-content {
+      max-width: 650px;
+      pointer-events: auto;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 6px 14px;
+      background: rgba(245, 158, 11, 0.18);
+      border: 1px solid var(--neon-primary);
+      border-radius: 20px;
+      color: var(--text-gold);
+      font-size: 0.85rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: 4.2rem;
+      font-weight: 900;
+      line-height: 1.05;
+      margin-bottom: 20px;
+      color: #ffffff;
+      text-shadow: 0 0 30px rgba(0,0,0,0.8);
+    }
+    .hero h1 span {
+      color: var(--neon-primary);
+      text-shadow: 0 0 20px var(--neon-glow);
+    }
+
+    .hero p {
+      font-size: 1.15rem;
+      color: #ffffff;
+      line-height: 1.6;
+      font-weight: 600;
+      margin-bottom: 30px;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.9);
+    }
+
+    .hero-btns {
+      display: flex;
+      gap: 16px;
+    }
+
+    .btn-primary {
+      background: var(--neon-primary);
+      color: #000;
+      padding: 16px 36px;
+      border-radius: 30px;
+      font-weight: 900;
+      font-size: 1rem;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 0 24px var(--neon-glow);
+      transition: all 0.25s ease;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 36px var(--neon-glow);
+    }
+
+    /* CATALOG SECTION & LIVE SEARCH & FILTERS */
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 2.8rem;
+      font-weight: 900;
+      text-align: center;
+      margin-bottom: 12px;
+      color: #ffffff;
+    }
+    .section-subtitle {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      margin-bottom: 30px;
+    }
+
+    .collection-section {
+      padding: 100px 60px;
+    }
+
+    .filter-bar-container {
+      max-width: 1100px;
+      margin: 0 auto 40px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .search-box-wrap {
+      flex: 1;
+      min-width: 280px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      background: rgba(23, 15, 4, 0.9);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      border-radius: 24px;
+      padding: 14px 24px 14px 46px;
+      color: #ffffff;
+      font-family: var(--font-main);
+      font-size: 0.95rem;
+      font-weight: 600;
+      outline: none;
+      transition: all 0.25s ease;
+    }
+    .search-input:focus {
+      border-color: var(--neon-primary);
+      box-shadow: 0 0 20px var(--neon-glow);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--neon-primary);
+      font-size: 1.1rem;
+    }
+
+    .filter-pills {
+      display: flex;
+      gap: 10px;
+    }
+
+    .filter-pill {
+      background: rgba(23, 15, 4, 0.8);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: #ffffff;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .filter-pill.active, .filter-pill:hover {
+      background: var(--neon-primary);
+      color: #000;
+      box-shadow: 0 0 16px var(--neon-glow);
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      gap: 28px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .product {
+      background: var(--bg-card);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      border-radius: 20px;
+      padding: 24px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+    .product:hover {
+      transform: translateY(-6px);
+      border-color: var(--neon-primary);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 20px var(--neon-glow);
+    }
+
+    .product-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .brand-badge {
+      font-size: 0.75rem;
+      font-weight: 900;
+      letter-spacing: 1px;
+      color: var(--neon-primary);
+      background: rgba(245, 158, 11, 0.15);
+      padding: 4px 10px;
+      border-radius: 8px;
+    }
+
+    .save-card-btn {
+      background: transparent;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    .save-card-btn:hover {
+      transform: scale(1.25);
+    }
+
+    .product .name {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+
+    .product .tag {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .product .price {
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: var(--text-gold);
+      margin-bottom: 16px;
+    }
+
+    .product-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .view-detail-btn {
+      flex: 1;
+      background: rgba(245, 158, 11, 0.18);
+      border: 1px solid var(--neon-primary);
+      color: #ffffff;
+      padding: 10px;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+    .view-detail-btn:hover {
+      background: var(--neon-primary);
+      color: #000;
+      box-shadow: 0 0 16px var(--neon-glow);
+    }
+
+    /* SNEAKER CRAFTING PROCESS SECTION */
+    .crafting-section {
+      padding: 100px 60px;
+      background: rgba(12, 7, 2, 0.95);
+      border-top: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .craft-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 24px;
+      max-width: 1200px;
+      margin: 40px auto 0;
+    }
+
+    .craft-card {
+      background: rgba(23, 15, 4, 0.85);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      border-radius: 20px;
+      padding: 28px;
+      transition: all 0.3s ease;
+    }
+    .craft-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--neon-primary);
+      box-shadow: 0 0 20px var(--neon-glow);
+    }
+
+    .craft-icon {
+      font-size: 2.2rem;
+      margin-bottom: 16px;
+    }
+
+    .craft-title {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 8px;
+    }
+
+    .craft-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* STORE OUTLETS SECTION */
+    .outlets-section {
+      padding: 100px 60px;
+      background: rgba(8, 4, 1, 0.9);
+      border-top: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .outlets-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+      max-width: 1200px;
+      margin: 40px auto 0;
+    }
+
+    .outlet-card {
+      background: rgba(23, 15, 4, 0.85);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      border-radius: 20px;
+      padding: 24px;
+    }
+
+    .outlet-city {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      font-weight: 900;
+      color: var(--neon-primary);
+      margin-bottom: 6px;
+    }
+
+    .outlet-name {
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 8px;
+    }
+
+    .outlet-address {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+      margin-bottom: 12px;
+    }
+
+    .outlet-hours {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-gold);
+    }
+
+    /* ABOUT & CREATOR SECTION */
+    .about-section {
+      padding: 100px 60px;
+      background: rgba(8, 4, 1, 0.9);
+      border-top: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .creator-card {
+      max-width: 800px;
+      margin: 0 auto;
+      background: rgba(23, 15, 4, 0.85);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      border-radius: 28px;
+      padding: 40px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      align-items: center;
+      box-shadow: 0 0 40px rgba(0,0,0,0.5);
+    }
+
+    .creator-avatar {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--neon-primary), var(--neon-secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.8rem;
+      box-shadow: 0 0 24px var(--neon-glow);
+    }
+
+    .creator-info {
+      flex: 1;
+      min-width: 260px;
+    }
+
+    .creator-info h3 {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+
+    .creator-role {
+      color: var(--neon-primary);
+      font-weight: 800;
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+    }
+
+    .creator-bio {
+      color: #ffffff;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin-bottom: 18px;
+    }
+
+    .creator-links {
+      display: flex;
+      gap: 14px;
+    }
+
+    .creator-link-btn {
+      color: #ffffff;
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid var(--neon-primary);
+      padding: 8px 16px;
+      border-radius: 16px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .creator-link-btn:hover {
+      background: var(--neon-primary);
+      color: #000;
+      box-shadow: 0 0 16px var(--neon-glow);
+    }
+
+    /* FOOTER */
+    footer {
+      padding: 40px 60px;
+      text-align: center;
+      border-top: 1px solid rgba(245, 158, 11, 0.3);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* ============================================================ */
+    /* DEDICATED PRODUCT DETAIL VIEW CONTAINER */
+    /* ============================================================ */
+    #product-detail-view {
+      display: none;
+      position: relative;
+      z-index: 10;
+      min-height: 100vh;
+      padding: 100px 60px 80px;
+    }
+
+    .detail-layout {
+      max-width: 1300px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 500px;
+      gap: 60px;
+      align-items: start;
+    }
+
+    .detail-interactive-area {
+      min-height: 520px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    .rotation-hint {
+      background: rgba(12, 7, 2, 0.85);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      padding: 12px 24px;
+      border-radius: 30px;
+      color: var(--text-gold);
+      font-weight: 800;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      width: fit-content;
+      backdrop-filter: blur(10px);
+    }
+
+    .detail-info-card {
+      background: rgba(23, 15, 4, 0.9);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      border-radius: 28px;
+      padding: 36px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 0 40px rgba(0,0,0,0.6);
+    }
+
+    .detail-header {
+      margin-bottom: 24px;
+    }
+    .detail-header .brand-badge {
+      font-size: 0.85rem;
+      margin-bottom: 8px;
+      display: inline-block;
+    }
+    .detail-title {
+      font-family: var(--font-display);
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: #ffffff;
+      line-height: 1.1;
+      margin-bottom: 8px;
+    }
+    .detail-subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .detail-price-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .detail-price {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: var(--text-gold);
+    }
+
+    /* GENDER CATEGORY TOGGLE (MEN / WOMEN) */
+    .gender-toggle-row {
+      margin-bottom: 24px;
+    }
+    .gender-toggle-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+    .gender-btns {
+      display: flex;
+      gap: 12px;
+    }
+    .gender-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 16px;
+      font-weight: 900;
+      font-size: 0.95rem;
+      border: none;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .gender-btn.men {
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid #3b82f6;
+      color: #93c5fd;
+    }
+    .gender-btn.men.active {
+      background: #3b82f6;
+      color: #fff;
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
+    }
+    .gender-btn.women {
+      background: rgba(236, 72, 153, 0.15);
+      border: 1px solid #ec4899;
+      color: #fbcfe8;
+    }
+    .gender-btn.women.active {
+      background: #ec4899;
+      color: #fff;
+      box-shadow: 0 0 20px rgba(236, 72, 153, 0.6);
+    }
+
+    /* SIZES GRID */
+    .size-section {
+      margin-bottom: 24px;
+    }
+    .size-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+    .size-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .size-btn {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #ffffff;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .size-btn.active, .size-btn:hover {
+      background: var(--neon-primary);
+      color: #000;
+      box-shadow: 0 0 14px var(--neon-glow);
+    }
+
+    /* AGE SIZE CALCULATOR TOOL */
+    .age-tool-card {
+      background: rgba(12, 7, 2, 0.9);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+    .age-tool-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--neon-primary);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .age-input-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .age-input {
+      width: 90px;
+      background: rgba(23, 15, 4, 0.9);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      border-radius: 12px;
+      padding: 8px 12px;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 0.95rem;
+      outline: none;
+    }
+    .age-result {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+    .age-result span {
+      color: var(--text-gold);
+      font-weight: 900;
+    }
+
+    .detail-actions {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+    .add-cart-detail-btn {
+      flex: 1;
+      background: var(--neon-primary);
+      color: #000;
+      padding: 16px;
+      border-radius: 20px;
+      font-weight: 900;
+      font-size: 1rem;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 0 24px var(--neon-glow);
+      transition: all 0.25s ease;
+    }
+    .add-cart-detail-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 36px var(--neon-glow);
+    }
+    .save-detail-btn {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid var(--neon-primary);
+      color: #ffffff;
+      padding: 16px 24px;
+      border-radius: 20px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .detail-description {
+      color: #ffffff;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .detail-features {
+      border-top: 1px solid rgba(245, 158, 11, 0.3);
+      padding-top: 20px;
+    }
+    .detail-features-title {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: var(--neon-primary);
+      margin-bottom: 12px;
+      letter-spacing: 1px;
+    }
+
+    .bottom-back-row {
+      margin-top: 60px;
+      text-align: center;
+    }
+
+    /* SIDE DRAWERS & MODALS */
+    .drawer-panel {
+      position: fixed;
+      top: 0;
+      right: -460px;
+      width: 440px;
+      height: 100vh;
+      z-index: 1000;
+      background: rgba(12, 7, 2, 0.95);
+      backdrop-filter: blur(20px);
+      border-left: 1px solid rgba(245, 158, 11, 0.45);
+      padding: 30px;
+      transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+    }
+    .drawer-panel.open {
+      right: 0;
+    }
+
+    .drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .drawer-title {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: #ffffff;
+    }
+    .close-drawer-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    .drawer-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 0;
+    }
+
+    .panel-item {
+      background: rgba(23, 15, 4, 0.85);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .pi-title {
+      font-weight: 800;
+      color: #ffffff;
+      font-size: 0.95rem;
+    }
+    .pi-sub {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+    .pi-price {
+      font-weight: 900;
+      color: var(--text-gold);
+    }
+
+    /* QUANTITY ADJUSTMENT BUTTONS IN CART */
+    .qty-btn {
+      background: rgba(245, 158, 11, 0.2);
+      border: 1px solid var(--neon-primary);
+      color: #ffffff;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      font-weight: 900;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    .qty-btn:hover {
+      background: var(--neon-primary);
+      color: #000;
+      box-shadow: 0 0 10px var(--neon-glow);
+    }
+
+    /* PAYMENT METHOD CARDS */
+    .pay-card-option {
+      background: rgba(12, 7, 2, 0.9);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .pay-card-option:hover, .pay-card-option.active {
+      border-color: var(--neon-primary);
+      background: rgba(245, 158, 11, 0.15);
+      box-shadow: 0 0 12px var(--neon-glow);
+    }
+
+    /* TOAST NOTIFICATION */
+    #toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(245, 158, 11, 0.95);
+      color: #000;
+      padding: 12px 28px;
+      border-radius: 30px;
+      font-weight: 900;
+      font-size: 0.95rem;
+      z-index: 10000;
+      opacity: 0;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 24px var(--neon-glow);
+    }
+    #toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* MODAL OVERLAYS */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      background: rgba(0, 0, 0, 0.82);
+      backdrop-filter: blur(12px);
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.show {
+      display: flex !important;
+    }
+
+    .modal-card {
+      background: rgba(23, 15, 4, 0.96);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      border-radius: 28px;
+      padding: 36px;
+      max-width: 520px;
+      width: 92%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 0 50px rgba(0,0,0,0.8);
+    }
+
+    /* SPINNER */
+    #spinner {
+      position: fixed;
+      inset: 0;
+      background: #080401;
+      z-index: 20000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      transition: opacity 0.5s ease;
+    }
+    #spinner.fade {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .spin-ring {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(245, 158, 11, 0.2);
+      border-top-color: var(--neon-primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 900px) {
+      .top-bar { padding: 0 16px; }
+      .hero { padding: 0 20px 80px; }
+      .hero h1 { font-size: 2.8rem; }
+      .detail-layout { grid-template-columns: 1fr; }
+      .collection-section { padding: 60px 20px; }
+      .crafting-section, .outlets-section, .about-section { padding: 60px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- INTERACTIVE GLOWING CUSTOM CURSOR -->
+  <div class="custom-cursor" id="customCursor"></div>
+  <div class="custom-cursor-dot" id="customCursorDot"></div>
+
+  <!-- SPINNER -->
+  <div id="spinner">
+    <div class="spin-ring"></div>
+    <div style="font-family:var(--font-display); font-weight:900; letter-spacing:2px; color:var(--neon-primary);">LOADING NEON SNEAKER STORE 3D...</div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast">Added to Cart!</div>
+
+  <!-- POP-UP FLASH TRANSITION OVERLAY -->
+  <div id="popupFlash"></div>
+
+  <!-- DYNAMIC BACKGROUND RADIAL ILLUMINATION -->
+  <div class="bg-glow-layer" id="bgGlow"></div>
+
+  <!-- THREE.JS WEBGL CANVAS -->
+  <div id="canvas-container"></div>
+
+  <!-- TOP NAVIGATION BAR -->
+  <header class="top-bar">
+    <a href="#" class="brand-logo" id="brandNav">NEON <span>SNEAKER STORE</span></a>
+    
+    <div class="nav-links main-nav-links">
+      <a href="#hero">Home</a>
+      <a href="#collection">Sneaker Store</a>
+      <a href="#crafting">Crafting Process</a>
+      <a href="#outlets">Store Outlets</a>
+      <a href="#about">Creator</a>
+    </div>
+
+    <!-- BACK TO MAIN COLLECTION BUTTON (Product Detail Mode) -->
+    <button class="top-back-btn" id="topBackBtn">⬅ Back to Sneaker Store</button>
+
+    <div class="nav-actions">
+      <!-- WORKING CLIENT PROFILE BUTTON -->
+      <button class="nav-icon-btn" id="profileBtn">👤 Account</button>
+      <!-- WORKING ABOUT BRAND BUTTON -->
+      <button class="nav-icon-btn" id="aboutBrandBtn">📖 About Brand</button>
+      <!-- WORKING STORES & INFO OPTION BUTTON -->
+      <button class="nav-icon-btn" id="infoBtn">🏬 Outlets</button>
+      <button class="nav-icon-btn" id="savedBtn">❤️ Saved <span class="badge" id="savedCount">0</span></button>
+      <button class="nav-icon-btn" id="cartBtn">🛒 Cart <span class="badge" id="cartCount">0</span></button>
+    </div>
+  </header>
+
+  <!-- MAIN LANDING PAGE CONTENT -->
+  <main id="main-content">
+    
+    <!-- HERO SECTION -->
+    <section class="hero" id="hero">
+      <div class="hero-content">
+        <div class="hero-badge">OFFICIAL 3D SNEAKER STORE & FLAGSHIP CATALOG</div>
+        <h1>THE NEXT-GEN <span>SNEAKER STORE</span></h1>
+        <p>Explore real 3D Air Jordan & Puma sneakers. Rotate 360°, inspect authentic leather panels, find your size by age, and shop online.</p>
+        <div class="hero-btns">
+          <a href="#collection" class="btn-primary">Shop Sneaker Store ➔</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- SNEAKER STORE CATALOG & LIVE SEARCH & FILTERS -->
+    <section class="collection-section" id="collection">
+      <h2 class="section-title">NEON SNEAKER STORE CATALOG</h2>
+      <p class="section-subtitle">Click any sneaker card to trigger the 3D Pop-Up Animation and view authentic 3D models in 360° detail!</p>
+
+      <div class="filter-bar-container">
+        <div class="search-box-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" id="searchInput" placeholder="Search sneaker store by name, brand, or colorway..." />
+        </div>
+
+        <div class="filter-pills">
+          <button class="filter-pill active" data-filter="all">All Sneakers</button>
+          <button class="filter-pill" data-filter="nike">Nike Inspired</button>
+          <button class="filter-pill" data-filter="puma">Puma Inspired</button>
+        </div>
+      </div>
+
+      <div class="product-grid" id="productCarousel">
+        <!-- Dynamically rendered product cards -->
+      </div>
+    </section>
+
+    <!-- SNEAKER MANUFACTURING & CRAFTING PROCESS SECTION -->
+    <section class="crafting-section" id="crafting">
+      <h2 class="section-title">HOW OUR SNEAKERS ARE CRAFTED</h2>
+      <p class="section-subtitle">Engineered with precision 3D CAD modeling, high-rebound Nitro foam, and Italian leather stitching.</p>
+
+      <div class="craft-grid">
+        <div class="craft-card">
+          <div class="craft-icon">🖥️</div>
+          <div class="craft-title">1. 3D Generative Ergonomic Design</div>
+          <div class="craft-desc">Every sneaker starts with high-resolution 3D CAD geometry modeling to calculate optimal foot pressure distribution and drag coefficients.</div>
+        </div>
+
+        <div class="craft-card">
+          <div class="craft-icon">🧪</div>
+          <div class="craft-title">2. Vulcanized Nitro Foam Molding</div>
+          <div class="craft-desc">Our midsoles feature high-energy Nitro gas injection molding for maximum energy return and ultra-lightweight cushioning.</div>
+        </div>
+
+        <div class="craft-card">
+          <div class="craft-icon">🧵</div>
+          <div class="craft-title">3. Italian Leather & Mesh Stitching</div>
+          <div class="craft-desc">Uppers are hand-cut from premium full-grain Italian leather and double-stitched with breathable high-tenacity woven mesh.</div>
+        </div>
+
+        <div class="craft-card">
+          <div class="craft-icon">⚡</div>
+          <div class="craft-title">4. Aerodynamic & Traction Certification</div>
+          <div class="craft-desc">Each batch undergoes high-friction outsole testing, impact absorption analysis, and 360° quality verification before store delivery.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GLOBAL STORE OUTLETS SECTION -->
+    <section class="outlets-section" id="outlets">
+      <h2 class="section-title">GLOBAL RETAIL STORE OUTLETS</h2>
+      <p class="section-subtitle">Visit our flagship physical sneaker stores and experience 3D custom fitting in person!</p>
+
+      <div class="outlets-grid">
+        <div class="outlet-card">
+          <div class="outlet-city">MUMBAI, INDIA</div>
+          <div class="outlet-name">Neon Sneaker Flagship Hub</div>
+          <div class="outlet-address">Cyber Galleria, BKC Financial District, Bandra East, Mumbai - 400051</div>
+          <div class="outlet-hours">🕒 Open Daily: 10:00 AM – 9:30 PM</div>
+        </div>
+
+        <div class="outlet-card">
+          <div class="outlet-city">TOKYO, JAPAN</div>
+          <div class="outlet-name">Harajuku 3D Sneaker Vault</div>
+          <div class="outlet-address">4-Chome-28-12 Jingumae, Shibuya-ku, Tokyo 150-0001</div>
+          <div class="outlet-hours">🕒 Open Daily: 11:00 AM – 8:00 PM</div>
+        </div>
+
+        <div class="outlet-card">
+          <div class="outlet-city">NEW YORK, USA</div>
+          <div class="outlet-name">SoHo Cyber Sneaker Gallery</div>
+          <div class="outlet-address">520 Broadway, SoHo District, New York, NY 10012</div>
+          <div class="outlet-hours">🕒 Open Daily: 10:00 AM – 9:00 PM</div>
+        </div>
+
+        <div class="outlet-card">
+          <div class="outlet-city">LONDON, UK</div>
+          <div class="outlet-name">Oxford Street Flagship Vault</div>
+          <div class="outlet-address">214 Oxford Street, Marylebone, London W1D 1LA</div>
+          <div class="outlet-hours">🕒 Open Daily: 10:00 AM – 8:00 PM</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CREATOR SECTION -->
+    <section class="about-section" id="about">
+      <h2 class="section-title">CREATOR INFO</h2>
+      <p class="section-subtitle">Crafted with passion for 3D web engineering & responsive user interfaces.</p>
+
+      <div class="creator-card">
+        <div class="creator-avatar">👟</div>
+        <div class="creator-info">
+          <h3>Atharva Ghugare</h3>
+          <div class="creator-role">Lead 3D Web Engineer & UI Architect</div>
+          <div class="creator-bio">
+            Built using Three.js WebGL rendering, custom PBR material engines, authentic GLB 3D model loaders, and responsive single-page architecture.
+          </div>
+          <div class="creator-links">
+            <a href="mailto:atharva.ghugare@vpt.edu.in" class="creator-link-btn">✉️ atharva.ghugare@vpt.edu.in</a>
+            <a href="https://www.linkedin.com/in/atharva-ghugare-725a703b6?utm_source=share_via&utm_content=profile&utm_medium=member_android" target="_blank" class="creator-link-btn">🔗 LinkedIn Profile</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      © 2026 NEON SNEAKER STORE — Designed & Engineered by Atharva Ghugare. All rights reserved.
+    </footer>
+  </main>
+
+  <!-- ============================================================ -->
+  <!-- DEDICATED PRODUCT DETAIL VIEW CONTAINER -->
+  <!-- ============================================================ -->
+  <div id="product-detail-view">
+    <div class="detail-layout">
+      
+      <!-- Interactive Left Side Area -->
+      <div class="detail-interactive-area">
+        <div class="rotation-hint">
+          <span>🖐️ CLICK & DRAG ANYWHERE TO ROTATE 360°</span>
+        </div>
+      </div>
+
+      <!-- Right Side Info Card -->
+      <div class="detail-info-card">
+        <div class="detail-header">
+          <div class="brand-badge" id="detailBrandBadge">NIKE INSPIRED</div>
+          <h2 class="detail-title" id="detailTitle">Air Jordan 1 High Chicago</h2>
+          <div class="detail-subtitle" id="detailTag">Authentic 3D GLB Model • Chicago Red & Sail</div>
+        </div>
+
+        <div class="detail-price-row">
+          <div class="detail-price" id="detailPrice">₹9,999</div>
+          <div style="font-size:0.9rem; font-weight:800; color:var(--neon-primary);">★ <span id="detailRating">5.0</span> (Verified Review)</div>
+        </div>
+
+        <!-- Gender Selector (Men / Women) -->
+        <div class="gender-toggle-row">
+          <div class="gender-toggle-title">SELECT CATEGORY / GENDER:</div>
+          <div class="gender-btns">
+            <button class="gender-btn men active" id="genderMenBtn">👔 Men's Edition</button>
+            <button class="gender-btn women" id="genderWomenBtn">👠 Women's Edition</button>
+          </div>
+        </div>
+
+        <!-- Dynamic Size Grid -->
+        <div class="size-section">
+          <div class="size-title" id="sizeSectionTitle">AVAILABLE SIZES:</div>
+          <div class="size-grid" id="sizeGrid">
+            <!-- Dynamic size buttons -->
+          </div>
+        </div>
+
+        <!-- Age Size Calculator Tool -->
+        <div class="age-tool-card">
+          <div class="age-tool-title">🧮 FIND RECOMMENDED SIZE BY AGE</div>
+          <div class="age-input-row">
+            <input type="number" class="age-input" id="ageInput" placeholder="Age" min="1" max="100" />
+            <div class="age-result" id="ageResultText">Input age above to see size recommendation</div>
+          </div>
+        </div>
+
+        <div class="detail-actions">
+          <button class="add-cart-detail-btn" id="detailAddToCartBtn">🛒 Add to Shopping Cart</button>
+          <button class="save-detail-btn" id="detailSaveBtn">❤️ Save</button>
+        </div>
+
+        <div class="detail-description" id="detailDesc">
+          Detailed product description...
+        </div>
+
+        <div class="detail-features">
+          <div class="detail-features-title">AUTHENTIC FEATURES & MATERIALS</div>
+          <div id="detailFeaturesList" style="display:flex; flex-direction:column; gap:8px;">
+            <!-- Features list -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="bottom-back-row">
+      <button class="btn-primary" id="bottomBackBtn">⬅ Return to Sneaker Store</button>
+    </div>
+  </div>
+
+  <!-- ABOUT BRAND HERITAGE SIDE DRAWER -->
+  <div class="drawer-panel" id="aboutBrandPanel">
+    <div class="drawer-header">
+      <div class="drawer-title">📖 Brand Origin & History</div>
+      <button class="close-drawer-btn" id="closeAboutBrand">✕</button>
+    </div>
+    <div class="drawer-body">
+      <div style="margin-bottom:24px;">
+        <h4 style="color:var(--neon-primary); font-family:var(--font-display); font-size:1.15rem; margin-bottom:8px;">🚀 HOW THE BRAND WAS MADE</h4>
+        <p style="font-size:0.92rem; color:#ffffff; line-height:1.6;">
+          <strong>NEON SNEAKER STORE</strong> was founded in 2026 by lead 3D Web Engineer & UI Architect <strong>Atharva Ghugare</strong>. Frustrated by traditional 2D static sneaker websites where buyers couldn't see authentic leather textures or sole thickness before ordering, Atharva pioneered real-time WebGL 3D rendering to bring full 360° interactive digital twin customization to sneakerheads worldwide.
+        </p>
+      </div>
+
+      <div style="margin-bottom:24px;">
+        <h4 style="color:var(--neon-primary); font-family:var(--font-display); font-size:1.15rem; margin-bottom:8px;">💡 HOW THE NAME "NEON SNEAKER" CAME TO BE</h4>
+        <p style="font-size:0.92rem; color:#ffffff; line-height:1.6;">
+          The name <strong>"NEON SNEAKER"</strong> was inspired by the vibrant midnight neon lightscapes of Tokyo’s Harajuku district and Mumbai’s Cyber BKC. 
+          <br /><br />
+          <em>"NEON"</em> represents high-energy Nitro gas cushioning, vibrant multi-panel leather colorways, and futuristic 3D Web illumination that pops on human eyes.
+          <br /><br />
+          <em>"SNEAKER"</em> honors authentic high-top Jordan & low-top Puma performance heritage crafted for agility and street style.
+        </p>
+      </div>
+
+      <div style="margin-bottom:24px;">
+        <h4 style="color:var(--neon-primary); font-family:var(--font-display); font-size:1.15rem; margin-bottom:12px;">🌟 OUR CORE PHILOSOPHY</h4>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div style="background:rgba(23,15,4,0.85); border:1px solid rgba(245,158,11,0.35); border-radius:14px; padding:12px;">
+            <div style="font-weight:900; color:var(--text-gold);">1. Authentic 3D Precision</div>
+            <div style="font-size:0.85rem; color:var(--text-muted);">Real GLB CAD geometry matching every millimeter of authentic footwear.</div>
+          </div>
+          <div style="background:rgba(23,15,4,0.85); border:1px solid rgba(245,158,11,0.35); border-radius:14px; padding:12px;">
+            <div style="font-weight:900; color:var(--text-gold);">2. High-Contrast Low-Vision Accessibility</div>
+            <div style="font-size:0.85rem; color:var(--text-muted);">Designed for crystal-clear readability with high-luminance typography.</div>
+          </div>
+          <div style="background:rgba(23,15,4,0.85); border:1px solid rgba(245,158,11,0.35); border-radius:14px; padding:12px;">
+            <div style="font-weight:900; color:var(--text-gold);">3. Global Retail Excellence</div>
+            <div style="font-size:0.85rem; color:var(--text-muted);">Bridging online 3D Web shopping with physical flagship store vaults in Mumbai, Tokyo, NYC, and London.</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h4 style="color:var(--neon-primary); font-family:var(--font-display); font-size:1.15rem; margin-bottom:8px;">📅 MILESTONES & TIMELINE</h4>
+        <div style="font-size:0.88rem; color:#ffffff; line-height:1.8;">
+          • <strong>2026:</strong> Brand founded by Atharva Ghugare.<br />
+          • <strong>2026:</strong> Launch of 3D WebGL GLB customization engine.<br />
+          • <strong>2026:</strong> Opening of Mumbai BKC & Tokyo Harajuku flagship vaults.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STORES & BRAND INFO SIDE DRAWER -->
+  <div class="drawer-panel" id="infoPanel">
+    <div class="drawer-header">
+      <div class="drawer-title">🏬 Stores & Brand Info</div>
+      <button class="close-drawer-btn" id="closeInfo">✕</button>
+    </div>
+    <div class="drawer-body">
+      <div style="margin-bottom:24px;">
+        <h4 style="color:var(--neon-primary); font-family:var(--font-display); font-size:1.1rem; margin-bottom:8px;">ABOUT NEON SNEAKER STORE</h4>
+        <p style="font-size:0.9rem; color:var(--text-muted); line-height:1.6;">
+          Neon Sneaker Store is a next-generation footwear retailer combining real-time 3D WebGL technology with authentic premium sneakers. Customers can inspect full 360° interactive models before visiting our retail store outlets.
+        </p>
+      </div>
+
+      <div style="margin-bottom:24px;">
+        <h4 style="color:var(--neon-primary); font-family:var(--font-display); font-size:1.1rem; margin-bottom:12px;">FLAGSHIP STORE OUTLETS</h4>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <div style="background:rgba(23,15,4,0.85); border:1px solid rgba(245,158,11,0.3); border-radius:14px; padding:12px;">
+            <div style="font-weight:900; color:#fff;">📍 Mumbai BKC Flagship</div>
+            <div style="font-size:0.82rem; color:var(--text-muted);">Cyber Galleria, BKC, Bandra East</div>
+            <div style="font-size:0.8rem; color:var(--text-gold); margin-top:4px;">📞 +91 22 5555 0199 | Open 10 AM - 9:30 PM</div>
+          </div>
+          <div style="background:rgba(23,15,4,0.85); border:1px solid rgba(245,158,11,0.3); border-radius:14px; padding:12px;">
+            <div style="font-weight:900; color:#fff;">📍 Tokyo Harajuku Vault</div>
+            <div style="font-size:0.82rem; color:var(--text-muted);">Jingumae 4-Chome, Shibuya-ku</div>
+            <div style="font-size:0.8rem; color:var(--text-gold); margin-top:4px;">📞 +81 3 4500 8820 | Open 11 AM - 8 PM</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h4 style="color:var(--neon-primary); font-family:var(--font-display); font-size:1.1rem; margin-bottom:8px;">CUSTOMER SUPPORT</h4>
+        <div style="font-size:0.9rem; color:var(--text-muted); line-height:1.6;">
+          ✉️ Email: support@neonsneakers.com<br />
+          ✉️ Engineer: atharva.ghugare@vpt.edu.in<br />
+          🚚 Free Shipping across India on orders over ₹5,000.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SAVED FAVORITES SIDE DRAWER -->
+  <div class="drawer-panel" id="savedPanel">
+    <div class="drawer-header">
+      <div class="drawer-title">❤️ Saved Favorites</div>
+      <button class="close-drawer-btn" id="closeSaved">✕</button>
+    </div>
+    <div class="drawer-body" id="savedItems">
+      <!-- Saved items -->
+    </div>
+  </div>
+
+  <!-- CART SIDE DRAWER -->
+  <div class="drawer-panel" id="cartPanel">
+    <div class="drawer-header">
+      <div class="drawer-title">🛒 Shopping Cart</div>
+      <button class="close-drawer-btn" id="closeCart">✕</button>
+    </div>
+    <div class="drawer-body" id="cartItems">
+      <!-- Cart items -->
+    </div>
+    <div style="padding-top:20px; border-top:1px solid rgba(245, 158, 11, 0.35);">
+      <div style="display:flex; justify-content:space-between; margin-bottom:16px; font-weight:900; font-size:1.1rem; color:#fff;">
+        <span>Total Amount:</span>
+        <span id="cartTotal" style="color:var(--text-gold);">₹0</span>
+      </div>
+      <button class="btn-primary" id="checkoutBtn" style="width:100%; justify-content:center;">Proceed to Checkout ➔</button>
+    </div>
+  </div>
+
+  <!-- CHECKOUT & PAYMENT METHOD MODAL -->
+  <div class="modal-overlay" id="checkoutOverlay">
+    <div class="modal-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h3 style="font-family:var(--font-display); font-size:1.6rem; color:#fff;">💳 Complete Checkout & Payment</h3>
+        <button id="closeCheckout" style="background:none; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+      </div>
+
+      <form id="checkoutForm" style="display:flex; flex-direction:column; gap:16px;">
+        <!-- ORDER SUMMARY -->
+        <div style="background:rgba(12, 7, 2, 0.9); border:1px solid rgba(245, 158, 11, 0.35); border-radius:14px; padding:14px;">
+          <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:4px; font-weight:800; letter-spacing:1px;">ORDER SUMMARY</div>
+          <div id="checkoutSummaryList" style="font-size:0.9rem; color:#fff; font-weight:700;"></div>
+          <div style="margin-top:8px; font-size:1.15rem; font-weight:900; color:var(--text-gold);" id="checkoutModalTotal">Total: ₹0</div>
+        </div>
+
+        <!-- SHIPPING DETAILS -->
+        <div style="font-size:0.85rem; font-weight:800; color:var(--neon-primary); letter-spacing:1px; margin-top:4px;">1. SHIPPING DETAILS</div>
+        <input type="text" id="chkName" placeholder="Full Name" required style="background:rgba(12, 7, 2, 0.9); border:1px solid rgba(245, 158, 11, 0.45); border-radius:12px; padding:12px 16px; color:#fff; font-weight:700;" />
+        <input type="email" id="chkEmail" placeholder="Email Address" required style="background:rgba(12, 7, 2, 0.9); border:1px solid rgba(245, 158, 11, 0.45); border-radius:12px; padding:12px 16px; color:#fff; font-weight:700;" />
+        <input type="tel" id="chkPhone" placeholder="Phone Number" required style="background:rgba(12, 7, 2, 0.9); border:1px solid rgba(245, 158, 11, 0.45); border-radius:12px; padding:12px 16px; color:#fff; font-weight:700;" />
+        <textarea id="chkAddress" placeholder="Full Delivery Address" required rows="2" style="background:rgba(12, 7, 2, 0.9); border:1px solid rgba(245, 158, 11, 0.45); border-radius:12px; padding:12px 16px; color:#fff; font-weight:700; font-family:var(--font-main);"></textarea>
+
+        <!-- PAYMENT METHOD SELECTION -->
+        <div style="font-size:0.85rem; font-weight:800; color:var(--neon-primary); letter-spacing:1px; margin-top:8px;">2. SELECT PAYMENT METHOD</div>
+        
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div class="pay-card-option active" data-method="card">
+            <span>💳</span> Credit / Debit Card
+          </div>
+          <div class="pay-card-option" data-method="upi">
+            <span>📱</span> UPI / QR Code
+          </div>
+          <div class="pay-card-option" data-method="netbanking">
+            <span>🏛️</span> Net Banking
+          </div>
+          <div class="pay-card-option" data-method="cod">
+            <span>💵</span> Cash on Delivery
+          </div>
+        </div>
+
+        <!-- DYNAMIC PAYMENT INPUT FIELDS -->
+        <div id="paymentDetailsContainer" style="background:rgba(12, 7, 2, 0.9); border:1px solid rgba(245, 158, 11, 0.35); border-radius:14px; padding:14px;">
+          <!-- Card Fields (Default) -->
+          <div id="payCardFields">
+            <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:8px; font-weight:700;">Enter Card Information (Visa, MasterCard, RuPay):</div>
+            <input type="text" id="cardNum" placeholder="Card Number (e.g. 4532 8901 2345 6789)" maxlength="19" required style="width:100%; background:rgba(23, 15, 4, 0.9); border:1px solid rgba(245, 158, 11, 0.45); border-radius:10px; padding:10px 14px; color:#fff; font-weight:700; margin-bottom:8px;" />
+            <div style="display:flex; gap:10px;">
+              <input type="text" id="cardExp" placeholder="MM/YY" maxlength="5" required style="flex:1; background:rgba(23, 15, 4, 0.9); border:1px solid rgba(245, 158, 11, 0.45); border-radius:10px; padding:10px 14px; color:#fff; font-weight:700;" />
+              <input type="password" id="cardCvv" placeholder="CVV" maxlength="4" required style="flex:1; background:rgba(23, 15, 4, 0.9); border:1px solid rgba(245, 158, 11, 0.45); border-radius:10px; padding:10px 14px; color:#fff; font-weight:700;" />
+            </div>
+          </div>
+
+          <!-- UPI Fields -->
+          <div id="payUpiFields" style="display:none;">
+            <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:8px; font-weight:700;">Enter UPI ID (Google Pay, PhonePe, Paytm, BHIM):</div>
+            <input type="text" id="upiId" placeholder="username@upi (e.g. name@okaxis)" style="width:100%; background:rgba(23, 15, 4, 0.9); border:1px solid rgba(245, 158, 11, 0.45); border-radius:10px; padding:10px 14px; color:#fff; font-weight:700;" />
+          </div>
+
+          <!-- Net Banking Fields -->
+          <div id="payNetbankingFields" style="display:none;">
+            <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:8px; font-weight:700;">Select Net Banking Provider:</div>
+            <select id="bankSelect" style="width:100%; background:rgba(23, 15, 4, 0.9); border:1px solid rgba(245, 158, 11, 0.45); border-radius:10px; padding:10px 14px; color:#fff; font-weight:700;">
+              <option value="hdfc">HDFC Bank</option>
+              <option value="sbi">State Bank of India (SBI)</option>
+              <option value="icici">ICICI Bank</option>
+              <option value="axis">Axis Bank</option>
+              <option value="kotak">Kotak Mahindra Bank</option>
+            </select>
+          </div>
+
+          <!-- COD Fields -->
+          <div id="payCodFields" style="display:none;">
+            <div style="font-size:0.85rem; color:var(--text-gold); font-weight:700; line-height:1.4;">
+              💵 Cash on Delivery Selected! You can pay cash or scan delivery QR code upon receiving your order.
+            </div>
+          </div>
+        </div>
+        
+        <button type="submit" class="btn-primary" style="justify-content:center; margin-top:10px;">Confirm & Pay Order ➔</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- CLIENT PROFILE / AUTH MODAL -->
+  <div class="modal-overlay" id="authOverlay">
+    <div class="modal-card" id="authModalCard">
+      <!-- Dynamically filled with Login / Sign Up or Active Profile View -->
+    </div>
+  </div>
+
+  <!-- APPLICATION JAVASCRIPT LOGIC -->
+  <script type="module" src="./js/app.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "name": "neon-sneaker-store-3d",
+  "version": "1.0.0",
+  "description": "Next-Gen 3D Interactive Sneaker Store featuring Three.js, realistic GLB models, and responsive UI",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "threejs",
+    "3d",
+    "sneakers",
+    "ecommerce",
+    "webgl",
+    "javascript"
+  ],
+  "author": "Atharva Ghugare",
+  "license": "MIT"
+}
